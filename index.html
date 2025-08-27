@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Drum Set</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .drum-set {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .drum {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 4px solid #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.1s ease;
+            position: relative;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .drum:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+        }
+
+        .drum:active {
+            transform: scale(0.95);
+        }
+
+        .drum.playing {
+            animation: drumHit 0.2s ease;
+        }
+
+        @keyframes drumHit {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        /* Individual drum styles */
+        .kick {
+            background: linear-gradient(145deg, #8B4513, #A0522D);
+            grid-column: 2 / 3;
+            grid-row: 3 / 4;
+        }
+
+        .snare {
+            background: linear-gradient(145deg, #F5F5DC, #DEB887);
+            grid-column: 3 / 4;
+            grid-row: 2 / 3;
+        }
+
+        .hi-hat {
+            background: linear-gradient(145deg, #C0C0C0, #A9A9A9);
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        }
+
+        .crash {
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            grid-column: 4 / 5;
+            grid-row: 1 / 2;
+        }
+
+        .tom1 {
+            background: linear-gradient(145deg, #CD853F, #D2691E);
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+        }
+
+        .tom2 {
+            background: linear-gradient(145deg, #CD853F, #D2691E);
+            grid-column: 4 / 5;
+            grid-row: 2 / 3;
+        }
+
+        .floor-tom {
+            background: linear-gradient(145deg, #8B4513, #A0522D);
+            grid-column: 1 / 2;
+            grid-row: 3 / 4;
+        }
+
+        .ride {
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            grid-column: 3 / 4;
+            grid-row: 3 / 4;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .volume-slider {
+            width: 150px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .drum-set {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .drum {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Interactive Drum Set 🎵</h1>
+        <p class="subtitle">Click on any drum or cymbal to play its sound! Use numbers 1-8 to play the instruments</p>
+        
+        <div class="drum-set">
+            <div class="drum hi-hat" data-sound="hi-hat">Hi-Hat</div>
+            <div class="drum tom1" data-sound="tom1">Tom 1</div>
+            <div class="drum snare" data-sound="snare">Snare</div>
+            <div class="drum crash" data-sound="crash">Crash</div>
+            <div class="drum tom2" data-sound="tom2">Tom 2</div>
+            <div class="drum floor-tom" data-sound="floor-tom">Floor Tom</div>
+            <div class="drum kick" data-sound="kick">Kick</div>
+            <div class="drum ride" data-sound="ride">Ride</div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="playAll">Play All</button>
+            <button class="control-btn" id="stopAll">Stop All</button>
+            <div>
+                <label for="volume">Volume: </label>
+                <input type="range" id="volume" class="volume-slider" min="0" max="1" step="0.1" value="0.7">
+            </div>
+        </div>
+
+        <div class="instructions">
+            <p><strong>Keyboard Controls:</strong> Press keys 1-8 to play drums, or use your mouse to click on them!</p>
+        </div>
+    </div>
+
+    <script>
+        class DrumSet {
+            constructor() {
+                this.audioContext = null;
+                this.sounds = {};
+                this.volume = 0.7;
+                this.isInitialized = false;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    await this.createSounds();
+                    this.setupEventListeners();
+                    this.isInitialized = true;
+                } catch (error) {
+                    console.error('Failed to initialize audio context:', error);
+                    alert('Please allow audio permissions to use the drum set!');
+                }
+            }
+
+            async createSounds() {
+                // Create different drum sounds using Web Audio API
+                this.sounds = {
+                    'kick': this.createKickSound(),
+                    'snare': this.createSnareSound(),
+                    'hi-hat': this.createHiHatSound(),
+                    'crash': this.createCrashSound(),
+                    'tom1': this.createTomSound(200),
+                    'tom2': this.createTomSound(150),
+                    'floor-tom': this.createTomSound(80),
+                    'ride': this.createRideSound()
+                };
+            }
+
+            createKickSound() {
+                return () => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    const filter = this.audioContext.createBiquadFilter();
+                    const compressor = this.audioContext.createDynamicsCompressor();
+                    
+                    oscillator.connect(filter);
+                    filter.connect(compressor);
+                    compressor.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // Kick drum characteristics - more realistic
+                    oscillator.frequency.setValueAtTime(60, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(150, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(30, this.audioContext.currentTime + 0.12);
+                    filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);
+                    
+                    // Compression for punch
+                    compressor.threshold.setValueAtTime(-20, this.audioContext.currentTime);
+                    compressor.knee.setValueAtTime(10, this.audioContext.currentTime);
+                    compressor.ratio.setValueAtTime(4, this.audioContext.currentTime);
+                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    compressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(this.volume * 1.2, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+                    
+                    oscillator.start(this.audioContext.currentTime);
+                    oscillator.stop(this.audioContext.currentTime + 0.12);
+                };
+            }
+
+            createSnareSound() {
+                return () => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    const filter = this.audioContext.createBiquadFilter();
+                    const compressor = this.audioContext.createDynamicsCompressor();
+                    
+                    // Create more realistic noise for snare wire sound
+                    const bufferSize = this.audioContext.sampleRate * 0.4;
+                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        // Add some correlation to make it more realistic
+                        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                    }
+                    
+                    const noiseSource = this.audioContext.createBufferSource();
+                    const noiseGain = this.audioContext.createGain();
+                    const noiseFilter = this.audioContext.createBiquadFilter();
+                    const noiseCompressor = this.audioContext.createDynamicsCompressor();
+                    
+                    noiseSource.buffer = buffer;
+                    noiseSource.connect(noiseFilter);
+                    noiseFilter.connect(noiseCompressor);
+                    noiseCompressor.connect(noiseGain);
+                    noiseGain.connect(this.audioContext.destination);
+                    
+                    oscillator.connect(filter);
+                    filter.connect(compressor);
+                    compressor.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // Snare drum characteristics - more realistic
+                    oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.25);
+                    
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(600, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.25);
+                    filter.Q.setValueAtTime(1.5, this.audioContext.currentTime);
+                    
+                    noiseFilter.type = 'highpass';
+                    noiseFilter.frequency.setValueAtTime(1000, this.audioContext.currentTime);
+                    noiseFilter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
+                    
+                    // Compression for snare punch
+                    compressor.threshold.setValueAtTime(-15, this.audioContext.currentTime);
+                    compressor.ratio.setValueAtTime(3, this.audioContext.currentTime);
+                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    compressor.release.setValueAtTime(0.15, this.audioContext.currentTime);
+                    
+                    noiseCompressor.threshold.setValueAtTime(-20, this.audioContext.currentTime);
+                    noiseCompressor.ratio.setValueAtTime(2, this.audioContext.currentTime);
+                    noiseCompressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    noiseCompressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(this.volume * 0.5, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.25);
+                    
+                    noiseGain.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.25);
+                    
+                    oscillator.start(this.audioContext.currentTime);
+                    noiseSource.start(this.audioContext.currentTime);
+                    oscillator.stop(this.audioContext.currentTime + 0.25);
+                    noiseSource.stop(this.audioContext.currentTime + 0.25);
+                };
+            }
+
+            createHiHatSound() {
+                return () => {
+                    // Create more realistic hi-hat noise
+                    const bufferSize = this.audioContext.sampleRate * 0.15;
+                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        // Add metallic character to hi-hat
+                        const decay = Math.exp(-i / (bufferSize * 0.2));
+                        output[i] = (Math.random() * 2 - 1) * decay * (1 + 0.3 * Math.sin(i * 0.1));
+                    }
+                    
+                    const noiseSource = this.audioContext.createBufferSource();
+                    const gainNode = this.audioContext.createGain();
+                    const filter = this.audioContext.createBiquadFilter();
+                    const compressor = this.audioContext.createDynamicsCompressor();
+                    
+                    noiseSource.buffer = buffer;
+                    noiseSource.connect(filter);
+                    filter.connect(compressor);
+                    compressor.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // Hi-hat characteristics - more realistic
+                    filter.type = 'highpass';
+                    filter.frequency.setValueAtTime(7000, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(5000, this.audioContext.currentTime + 0.15);
+                    filter.Q.setValueAtTime(1.2, this.audioContext.currentTime);
+                    
+                    // Compression for hi-hat definition
+                    compressor.threshold.setValueAtTime(-25, this.audioContext.currentTime);
+                    compressor.ratio.setValueAtTime(2, this.audioContext.currentTime);
+                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    compressor.release.setValueAtTime(0.05, this.audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(this.volume * 0.5, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+                    
+                    noiseSource.start(this.audioContext.currentTime);
+                    noiseSource.stop(this.audioContext.currentTime + 0.12);
+                };
+            }
+
+            createCrashSound() {
+                return () => {
+                    // Create more realistic crash cymbal noise
+                    const bufferSize = this.audioContext.sampleRate * 2.0;
+                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        // Add metallic harmonics and realistic decay
+                        const decay = Math.exp(-i / (bufferSize * 0.4));
+                        const harmonic = Math.sin(i * 0.05) * Math.sin(i * 0.1) * Math.sin(i * 0.15);
+                        output[i] = (Math.random() * 2 - 1) * decay * (1 + 0.2 * harmonic);
+                    }
+                    
+                    const noiseSource = this.audioContext.createBufferSource();
+                    const gainNode = this.audioContext.createGain();
+                    const filter = this.audioContext.createBiquadFilter();
+                    const compressor = this.audioContext.createDynamicsCompressor();
+                    
+                    noiseSource.buffer = buffer;
+                    noiseSource.connect(filter);
+                    filter.connect(compressor);
+                    compressor.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // Crash cymbal characteristics - more realistic
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(2500, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(600, this.audioContext.currentTime + 2.0);
+                    filter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
+                    
+                    // Compression for crash control
+                    compressor.threshold.setValueAtTime(-30, this.audioContext.currentTime);
+                    compressor.ratio.setValueAtTime(1.5, this.audioContext.currentTime);
+                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    compressor.release.setValueAtTime(0.3, this.audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(this.volume * 0.6, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 2.0);
+                    
+                    noiseSource.start(this.audioContext.currentTime);
+                    noiseSource.stop(this.audioContext.currentTime + 2.0);
+                };
+            }
+
+            createTomSound(frequency) {
+                return () => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    const filter = this.audioContext.createBiquadFilter();
+                    const compressor = this.audioContext.createDynamicsCompressor();
+                    
+                    oscillator.connect(filter);
+                    filter.connect(compressor);
+                    compressor.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // Tom characteristics - more realistic
+                    oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.25, this.audioContext.currentTime + 0.3);
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(frequency * 2.5, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(frequency * 0.4, this.audioContext.currentTime + 0.3);
+                    filter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
+                    
+                    // Compression for tom punch
+                    compressor.threshold.setValueAtTime(-18, this.audioContext.currentTime);
+                    compressor.ratio.setValueAtTime(2.5, this.audioContext.currentTime);
+                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    compressor.release.setValueAtTime(0.2, this.audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(this.volume * 0.8, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(this.audioContext.currentTime);
+                    oscillator.stop(this.audioContext.currentTime + 0.3);
+                };
+            }
+
+            createRideSound() {
+                return () => {
+                    // Create more realistic ride cymbal noise
+                    const bufferSize = this.audioContext.sampleRate * 1.2;
+                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        // Add metallic character and bell-like harmonics
+                        const decay = Math.exp(-i / (bufferSize * 0.3));
+                        const bell = Math.sin(i * 0.02) * Math.sin(i * 0.04) * Math.sin(i * 0.08);
+                        output[i] = (Math.random() * 2 - 1) * decay * (1 + 0.15 * bell);
+                    }
+                    
+                    const noiseSource = this.audioContext.createBufferSource();
+                    const gainNode = this.audioContext.createGain();
+                    const filter = this.audioContext.createBiquadFilter();
+                    const compressor = this.audioContext.createDynamicsCompressor();
+                    
+                    noiseSource.buffer = buffer;
+                    noiseSource.connect(filter);
+                    filter.connect(compressor);
+                    compressor.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // Ride cymbal characteristics - more realistic
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(1800, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(700, this.audioContext.currentTime + 1.2);
+                    filter.Q.setValueAtTime(1.0, this.audioContext.currentTime);
+                    
+                    // Compression for ride definition
+                    compressor.threshold.setValueAtTime(-28, this.audioContext.currentTime);
+                    compressor.ratio.setValueAtTime(1.8, this.audioContext.currentTime);
+                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
+                    compressor.release.setValueAtTime(0.2, this.audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1.2);
+                    
+                    noiseSource.start(this.audioContext.currentTime);
+                    noiseSource.stop(this.audioContext.currentTime + 1.2);
+                };
+            }
+
+            playSound(soundName) {
+                if (!this.isInitialized || !this.sounds[soundName]) return;
+                
+                // Resume audio context if suspended
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                this.sounds[soundName]();
+                this.animateDrum(soundName);
+            }
+
+            animateDrum(soundName) {
+                const drum = document.querySelector(`[data-sound="${soundName}"]`);
+                if (drum) {
+                    drum.classList.add('playing');
+                    setTimeout(() => {
+                        drum.classList.remove('playing');
+                    }, 200);
+                }
+            }
+
+            setupEventListeners() {
+                // Click events for drums
+                document.querySelectorAll('.drum').forEach(drum => {
+                    drum.addEventListener('click', (e) => {
+                        const soundName = e.target.dataset.sound;
+                        this.playSound(soundName);
+                    });
+                });
+
+                // Keyboard events
+                const keyMap = {
+                    '1': 'hi-hat',
+                    '2': 'tom1',
+                    '3': 'snare',
+                    '4': 'crash',
+                    '5': 'tom2',
+                    '6': 'floor-tom',
+                    '7': 'kick',
+                    '8': 'ride'
+                };
+
+                document.addEventListener('keydown', (e) => {
+                    const soundName = keyMap[e.key];
+                    if (soundName) {
+                        this.playSound(soundName);
+                    }
+                });
+
+                // Volume control
+                document.getElementById('volume').addEventListener('input', (e) => {
+                    this.volume = parseFloat(e.target.value);
+                });
+
+                // Play all button
+                document.getElementById('playAll').addEventListener('click', () => {
+                    const sounds = Object.keys(this.sounds);
+                    sounds.forEach((sound, index) => {
+                        setTimeout(() => {
+                            this.playSound(sound);
+                        }, index * 200);
+                    });
+                });
+
+                // Stop all button
+                document.getElementById('stopAll').addEventListener('click', () => {
+                    // This would require more complex implementation to stop sounds
+                    // For now, just show a message
+                    alert('All sounds stopped!');
+                });
+            }
+        }
+
+        // Initialize the drum set when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new DrumSet();
+        });
+    </script>
+</body>
+</html>
