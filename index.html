@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Drum Set</title>
+    <title>Interactive Drum Set</title>
     <style>
         * {
             margin: 0;
@@ -209,7 +209,7 @@
 <body>
     <div class="container">
         <h1>🎵 Interactive Drum Set 🎵</h1>
-        <p class="subtitle">Click on any drum or cymbal to play its sound! Use numbers 1-8 to play the instruments</p>
+        <p class="subtitle">Click on any drum or cymbal to play its sound!</p>
         
         <div class="drum-set">
             <div class="drum hi-hat" data-sound="hi-hat">Hi-Hat</div>
@@ -265,9 +265,9 @@
                     'snare': this.createSnareSound(),
                     'hi-hat': this.createHiHatSound(),
                     'crash': this.createCrashSound(),
-                    'tom1': this.createTomSound(200),
-                    'tom2': this.createTomSound(150),
-                    'floor-tom': this.createTomSound(80),
+                    'tom1': this.createTomSound(220),
+                    'tom2': this.createTomSound(180),
+                    'floor-tom': this.createTomSound(120),
                     'ride': this.createRideSound()
                 };
             }
@@ -277,34 +277,27 @@
                     const oscillator = this.audioContext.createOscillator();
                     const gainNode = this.audioContext.createGain();
                     const filter = this.audioContext.createBiquadFilter();
-                    const compressor = this.audioContext.createDynamicsCompressor();
                     
                     oscillator.connect(filter);
-                    filter.connect(compressor);
-                    compressor.connect(gainNode);
+                    filter.connect(gainNode);
                     gainNode.connect(this.audioContext.destination);
                     
-                    // Kick drum characteristics - more realistic
-                    oscillator.frequency.setValueAtTime(60, this.audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+                    // Kick drum characteristics - deep and punchy
+                    oscillator.frequency.setValueAtTime(80, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(30, this.audioContext.currentTime + 0.1);
+                    oscillator.frequency.exponentialRampToValueAtTime(20, this.audioContext.currentTime + 0.15);
                     
                     filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(150, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(30, this.audioContext.currentTime + 0.12);
-                    filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);
+                    filter.frequency.setValueAtTime(200, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.15);
+                    filter.Q.setValueAtTime(1, this.audioContext.currentTime);
                     
-                    // Compression for punch
-                    compressor.threshold.setValueAtTime(-20, this.audioContext.currentTime);
-                    compressor.knee.setValueAtTime(10, this.audioContext.currentTime);
-                    compressor.ratio.setValueAtTime(4, this.audioContext.currentTime);
-                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    compressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 1.2, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+                    gainNode.gain.setValueAtTime(this.volume * 1.5, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(this.volume * 0.5, this.audioContext.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
                     
                     oscillator.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.12);
+                    oscillator.stop(this.audioContext.currentTime + 0.2);
                 };
             }
 
@@ -313,157 +306,114 @@
                     const oscillator = this.audioContext.createOscillator();
                     const gainNode = this.audioContext.createGain();
                     const filter = this.audioContext.createBiquadFilter();
-                    const compressor = this.audioContext.createDynamicsCompressor();
                     
-                    // Create more realistic noise for snare wire sound
-                    const bufferSize = this.audioContext.sampleRate * 0.4;
+                    // Create noise for snare wire sound
+                    const bufferSize = this.audioContext.sampleRate * 0.3;
                     const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
                     const output = buffer.getChannelData(0);
                     
                     for (let i = 0; i < bufferSize; i++) {
-                        // Add some correlation to make it more realistic
-                        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                        output[i] = (Math.random() * 2 - 1);
                     }
                     
                     const noiseSource = this.audioContext.createBufferSource();
                     const noiseGain = this.audioContext.createGain();
                     const noiseFilter = this.audioContext.createBiquadFilter();
-                    const noiseCompressor = this.audioContext.createDynamicsCompressor();
                     
                     noiseSource.buffer = buffer;
                     noiseSource.connect(noiseFilter);
-                    noiseFilter.connect(noiseCompressor);
-                    noiseCompressor.connect(noiseGain);
+                    noiseFilter.connect(noiseGain);
                     noiseGain.connect(this.audioContext.destination);
                     
                     oscillator.connect(filter);
-                    filter.connect(compressor);
-                    compressor.connect(gainNode);
+                    filter.connect(gainNode);
                     gainNode.connect(this.audioContext.destination);
                     
-                    // Snare drum characteristics - more realistic
-                    oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.25);
+                    // Snare drum characteristics
+                    oscillator.frequency.setValueAtTime(250, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(150, this.audioContext.currentTime + 0.2);
                     
                     filter.type = 'bandpass';
-                    filter.frequency.setValueAtTime(600, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.25);
-                    filter.Q.setValueAtTime(1.5, this.audioContext.currentTime);
+                    filter.frequency.setValueAtTime(800, this.audioContext.currentTime);
+                    filter.Q.setValueAtTime(2, this.audioContext.currentTime);
                     
                     noiseFilter.type = 'highpass';
-                    noiseFilter.frequency.setValueAtTime(1000, this.audioContext.currentTime);
-                    noiseFilter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
+                    noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+                    noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
                     
-                    // Compression for snare punch
-                    compressor.threshold.setValueAtTime(-15, this.audioContext.currentTime);
-                    compressor.ratio.setValueAtTime(3, this.audioContext.currentTime);
-                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    compressor.release.setValueAtTime(0.15, this.audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(this.volume * 0.8, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
                     
-                    noiseCompressor.threshold.setValueAtTime(-20, this.audioContext.currentTime);
-                    noiseCompressor.ratio.setValueAtTime(2, this.audioContext.currentTime);
-                    noiseCompressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    noiseCompressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.5, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.25);
-                    
-                    noiseGain.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
-                    noiseGain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.25);
+                    noiseGain.gain.setValueAtTime(this.volume * 0.9, this.audioContext.currentTime);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
                     
                     oscillator.start(this.audioContext.currentTime);
                     noiseSource.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.25);
-                    noiseSource.stop(this.audioContext.currentTime + 0.25);
+                    oscillator.stop(this.audioContext.currentTime + 0.2);
+                    noiseSource.stop(this.audioContext.currentTime + 0.2);
                 };
             }
 
             createHiHatSound() {
                 return () => {
-                    // Create more realistic hi-hat noise
-                    const bufferSize = this.audioContext.sampleRate * 0.15;
+                    const bufferSize = this.audioContext.sampleRate * 0.1;
                     const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
                     const output = buffer.getChannelData(0);
                     
                     for (let i = 0; i < bufferSize; i++) {
-                        // Add metallic character to hi-hat
-                        const decay = Math.exp(-i / (bufferSize * 0.2));
-                        output[i] = (Math.random() * 2 - 1) * decay * (1 + 0.3 * Math.sin(i * 0.1));
+                        output[i] = (Math.random() * 2 - 1);
                     }
                     
                     const noiseSource = this.audioContext.createBufferSource();
                     const gainNode = this.audioContext.createGain();
                     const filter = this.audioContext.createBiquadFilter();
-                    const compressor = this.audioContext.createDynamicsCompressor();
                     
                     noiseSource.buffer = buffer;
                     noiseSource.connect(filter);
-                    filter.connect(compressor);
-                    compressor.connect(gainNode);
+                    filter.connect(gainNode);
                     gainNode.connect(this.audioContext.destination);
                     
-                    // Hi-hat characteristics - more realistic
                     filter.type = 'highpass';
-                    filter.frequency.setValueAtTime(7000, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(5000, this.audioContext.currentTime + 0.15);
-                    filter.Q.setValueAtTime(1.2, this.audioContext.currentTime);
+                    filter.frequency.setValueAtTime(8000, this.audioContext.currentTime);
+                    filter.Q.setValueAtTime(1.5, this.audioContext.currentTime);
                     
-                    // Compression for hi-hat definition
-                    compressor.threshold.setValueAtTime(-25, this.audioContext.currentTime);
-                    compressor.ratio.setValueAtTime(2, this.audioContext.currentTime);
-                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    compressor.release.setValueAtTime(0.05, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.5, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+                    gainNode.gain.setValueAtTime(this.volume * 0.6, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
                     
                     noiseSource.start(this.audioContext.currentTime);
-                    noiseSource.stop(this.audioContext.currentTime + 0.12);
+                    noiseSource.stop(this.audioContext.currentTime + 0.1);
                 };
             }
 
             createCrashSound() {
                 return () => {
-                    // Create more realistic crash cymbal noise
-                    const bufferSize = this.audioContext.sampleRate * 2.0;
+                    const bufferSize = this.audioContext.sampleRate * 1.5;
                     const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
                     const output = buffer.getChannelData(0);
                     
                     for (let i = 0; i < bufferSize; i++) {
-                        // Add metallic harmonics and realistic decay
-                        const decay = Math.exp(-i / (bufferSize * 0.4));
-                        const harmonic = Math.sin(i * 0.05) * Math.sin(i * 0.1) * Math.sin(i * 0.15);
-                        output[i] = (Math.random() * 2 - 1) * decay * (1 + 0.2 * harmonic);
+                        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
                     }
                     
                     const noiseSource = this.audioContext.createBufferSource();
                     const gainNode = this.audioContext.createGain();
                     const filter = this.audioContext.createBiquadFilter();
-                    const compressor = this.audioContext.createDynamicsCompressor();
                     
                     noiseSource.buffer = buffer;
                     noiseSource.connect(filter);
-                    filter.connect(compressor);
-                    compressor.connect(gainNode);
+                    filter.connect(gainNode);
                     gainNode.connect(this.audioContext.destination);
                     
-                    // Crash cymbal characteristics - more realistic
                     filter.type = 'bandpass';
-                    filter.frequency.setValueAtTime(2500, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(600, this.audioContext.currentTime + 2.0);
+                    filter.frequency.setValueAtTime(3000, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(1000, this.audioContext.currentTime + 1.5);
                     filter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
                     
-                    // Compression for crash control
-                    compressor.threshold.setValueAtTime(-30, this.audioContext.currentTime);
-                    compressor.ratio.setValueAtTime(1.5, this.audioContext.currentTime);
-                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    compressor.release.setValueAtTime(0.3, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.6, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 2.0);
+                    gainNode.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 1.5);
                     
                     noiseSource.start(this.audioContext.currentTime);
-                    noiseSource.stop(this.audioContext.currentTime + 2.0);
+                    noiseSource.stop(this.audioContext.currentTime + 1.5);
                 };
             }
 
@@ -472,78 +422,59 @@
                     const oscillator = this.audioContext.createOscillator();
                     const gainNode = this.audioContext.createGain();
                     const filter = this.audioContext.createBiquadFilter();
-                    const compressor = this.audioContext.createDynamicsCompressor();
                     
                     oscillator.connect(filter);
-                    filter.connect(compressor);
-                    compressor.connect(gainNode);
+                    filter.connect(gainNode);
                     gainNode.connect(this.audioContext.destination);
                     
-                    // Tom characteristics - more realistic
+                    // Tom characteristics with better audibility
                     oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.25, this.audioContext.currentTime + 0.3);
+                    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.3, this.audioContext.currentTime + 0.4);
                     
                     filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(frequency * 2.5, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(frequency * 0.4, this.audioContext.currentTime + 0.3);
-                    filter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
+                    filter.frequency.setValueAtTime(frequency * 3, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(frequency * 0.5, this.audioContext.currentTime + 0.4);
+                    filter.Q.setValueAtTime(1.2, this.audioContext.currentTime);
                     
-                    // Compression for tom punch
-                    compressor.threshold.setValueAtTime(-18, this.audioContext.currentTime);
-                    compressor.ratio.setValueAtTime(2.5, this.audioContext.currentTime);
-                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    compressor.release.setValueAtTime(0.2, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.8, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+                    // Increased volume and better envelope
+                    gainNode.gain.setValueAtTime(this.volume * 1.2, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(this.volume * 0.3, this.audioContext.currentTime + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.4);
                     
                     oscillator.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.3);
+                    oscillator.stop(this.audioContext.currentTime + 0.4);
                 };
             }
 
             createRideSound() {
                 return () => {
-                    // Create more realistic ride cymbal noise
-                    const bufferSize = this.audioContext.sampleRate * 1.2;
+                    const bufferSize = this.audioContext.sampleRate * 1.0;
                     const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
                     const output = buffer.getChannelData(0);
                     
                     for (let i = 0; i < bufferSize; i++) {
-                        // Add metallic character and bell-like harmonics
-                        const decay = Math.exp(-i / (bufferSize * 0.3));
-                        const bell = Math.sin(i * 0.02) * Math.sin(i * 0.04) * Math.sin(i * 0.08);
-                        output[i] = (Math.random() * 2 - 1) * decay * (1 + 0.15 * bell);
+                        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
                     }
                     
                     const noiseSource = this.audioContext.createBufferSource();
                     const gainNode = this.audioContext.createGain();
                     const filter = this.audioContext.createBiquadFilter();
-                    const compressor = this.audioContext.createDynamicsCompressor();
                     
                     noiseSource.buffer = buffer;
                     noiseSource.connect(filter);
-                    filter.connect(compressor);
-                    compressor.connect(gainNode);
+                    filter.connect(gainNode);
                     gainNode.connect(this.audioContext.destination);
                     
-                    // Ride cymbal characteristics - more realistic
                     filter.type = 'bandpass';
-                    filter.frequency.setValueAtTime(1800, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(700, this.audioContext.currentTime + 1.2);
-                    filter.Q.setValueAtTime(1.0, this.audioContext.currentTime);
+                    filter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 1.0);
+                    filter.Q.setValueAtTime(1.2, this.audioContext.currentTime);
                     
-                    // Compression for ride definition
-                    compressor.threshold.setValueAtTime(-28, this.audioContext.currentTime);
-                    compressor.ratio.setValueAtTime(1.8, this.audioContext.currentTime);
-                    compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime);
-                    compressor.release.setValueAtTime(0.2, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1.2);
+                    gainNode.gain.setValueAtTime(this.volume * 0.8, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 1.0);
                     
                     noiseSource.start(this.audioContext.currentTime);
-                    noiseSource.stop(this.audioContext.currentTime + 1.2);
+                    noiseSource.stop(this.audioContext.currentTime + 1.0);
                 };
             }
 
@@ -555,8 +486,12 @@
                     this.audioContext.resume();
                 }
                 
-                this.sounds[soundName]();
-                this.animateDrum(soundName);
+                try {
+                    this.sounds[soundName]();
+                    this.animateDrum(soundName);
+                } catch (error) {
+                    console.error('Error playing sound:', soundName, error);
+                }
             }
 
             animateDrum(soundName) {
@@ -608,15 +543,17 @@
                     sounds.forEach((sound, index) => {
                         setTimeout(() => {
                             this.playSound(sound);
-                        }, index * 200);
+                        }, index * 300);
                     });
                 });
 
-                // Stop all button
+                // Stop all button (simplified implementation)
                 document.getElementById('stopAll').addEventListener('click', () => {
-                    // This would require more complex implementation to stop sounds
-                    // For now, just show a message
-                    alert('All sounds stopped!');
+                    // Close and recreate audio context to stop all sounds
+                    if (this.audioContext) {
+                        this.audioContext.close();
+                        this.init();
+                    }
                 });
             }
         }
