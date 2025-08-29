@@ -259,229 +259,435 @@
             }
 
             async createSounds() {
-                // Create different drum sounds using Web Audio API
                 this.sounds = {
-                    'kick': this.createKickSound(),
-                    'snare': this.createSnareSound(),
-                    'hi-hat': this.createHiHatSound(),
-                    'crash': this.createCrashSound(),
-                    'tom1': this.createTomSound(220),
-                    'tom2': this.createTomSound(180),
-                    'floor-tom': this.createTomSound(120),
-                    'ride': this.createRideSound()
+                    'kick': this.createRealisticKick(),
+                    'snare': this.createRealisticSnare(),
+                    'hi-hat': this.createRealisticHiHat(),
+                    'crash': this.createRealisticCrash(),
+                    'tom1': this.createRealisticTom(220, 0.5),
+                    'tom2': this.createRealisticTom(165, 0.6),
+                    'floor-tom': this.createRealisticTom(110, 0.8),
+                    'ride': this.createRealisticRide()
                 };
             }
 
-            createKickSound() {
+            createRealisticKick() {
                 return () => {
-                    const oscillator = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
-                    const filter = this.audioContext.createBiquadFilter();
+                    const time = this.audioContext.currentTime;
                     
-                    oscillator.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
+                    // Main body oscillator
+                    const bodyOsc = this.audioContext.createOscillator();
+                    const bodyGain = this.audioContext.createGain();
+                    const bodyFilter = this.audioContext.createBiquadFilter();
                     
-                    // Kick drum characteristics - deep and punchy
-                    oscillator.frequency.setValueAtTime(80, this.audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(30, this.audioContext.currentTime + 0.1);
-                    oscillator.frequency.exponentialRampToValueAtTime(20, this.audioContext.currentTime + 0.15);
+                    // Sub-bass oscillator for deep thump
+                    const subOsc = this.audioContext.createOscillator();
+                    const subGain = this.audioContext.createGain();
+                    const subFilter = this.audioContext.createBiquadFilter();
                     
-                    filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(200, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.15);
-                    filter.Q.setValueAtTime(1, this.audioContext.currentTime);
+                    // Attack click oscillator
+                    const clickOsc = this.audioContext.createOscillator();
+                    const clickGain = this.audioContext.createGain();
+                    const clickFilter = this.audioContext.createBiquadFilter();
                     
-                    gainNode.gain.setValueAtTime(this.volume * 1.5, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(this.volume * 0.5, this.audioContext.currentTime + 0.05);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+                    // Connect main body
+                    bodyOsc.connect(bodyFilter);
+                    bodyFilter.connect(bodyGain);
+                    bodyGain.connect(this.audioContext.destination);
                     
-                    oscillator.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.2);
+                    // Connect sub-bass
+                    subOsc.connect(subFilter);
+                    subFilter.connect(subGain);
+                    subGain.connect(this.audioContext.destination);
+                    
+                    // Connect click
+                    clickOsc.connect(clickFilter);
+                    clickFilter.connect(clickGain);
+                    clickGain.connect(this.audioContext.destination);
+                    
+                    // Body frequency sweep (realistic kick fundamental)
+                    bodyOsc.frequency.setValueAtTime(60, time);
+                    bodyOsc.frequency.exponentialRampToValueAtTime(35, time + 0.08);
+                    bodyOsc.frequency.exponentialRampToValueAtTime(25, time + 0.3);
+                    
+                    // Sub-bass for depth
+                    subOsc.frequency.setValueAtTime(40, time);
+                    subOsc.frequency.exponentialRampToValueAtTime(20, time + 0.15);
+                    
+                    // Attack click for punch
+                    clickOsc.frequency.setValueAtTime(150, time);
+                    clickOsc.frequency.exponentialRampToValueAtTime(80, time + 0.01);
+                    
+                    // Filters
+                    bodyFilter.type = 'lowpass';
+                    bodyFilter.frequency.setValueAtTime(120, time);
+                    bodyFilter.frequency.exponentialRampToValueAtTime(60, time + 0.3);
+                    bodyFilter.Q.setValueAtTime(0.8, time);
+                    
+                    subFilter.type = 'lowpass';
+                    subFilter.frequency.setValueAtTime(80, time);
+                    subFilter.Q.setValueAtTime(0.5, time);
+                    
+                    clickFilter.type = 'highpass';
+                    clickFilter.frequency.setValueAtTime(100, time);
+                    clickFilter.Q.setValueAtTime(1, time);
+                    
+                    // Gain envelopes
+                    bodyGain.gain.setValueAtTime(this.volume * 0.8, time);
+                    bodyGain.gain.exponentialRampToValueAtTime(this.volume * 0.4, time + 0.05);
+                    bodyGain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+                    
+                    subGain.gain.setValueAtTime(this.volume * 0.6, time);
+                    subGain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+                    
+                    clickGain.gain.setValueAtTime(this.volume * 0.3, time);
+                    clickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.01);
+                    
+                    // Start and stop
+                    bodyOsc.start(time);
+                    subOsc.start(time);
+                    clickOsc.start(time);
+                    
+                    bodyOsc.stop(time + 0.3);
+                    subOsc.stop(time + 0.15);
+                    clickOsc.stop(time + 0.01);
                 };
             }
 
-            createSnareSound() {
+            createRealisticSnare() {
                 return () => {
-                    const oscillator = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
-                    const filter = this.audioContext.createBiquadFilter();
+                    const time = this.audioContext.currentTime;
                     
-                    // Create noise for snare wire sound
-                    const bufferSize = this.audioContext.sampleRate * 0.3;
-                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
-                    const output = buffer.getChannelData(0);
+                    // Drum head oscillator
+                    const drumOsc = this.audioContext.createOscillator();
+                    const drumGain = this.audioContext.createGain();
+                    const drumFilter = this.audioContext.createBiquadFilter();
                     
-                    for (let i = 0; i < bufferSize; i++) {
-                        output[i] = (Math.random() * 2 - 1);
-                    }
+                    // Snare wires noise
+                    const noiseBuffer = this.createNoiseBuffer(0.3, 'pink');
+                    const noiseSource = this.audioContext.createBufferSource();
+                    const noiseGain = this.audioContext.createGain();
+                    const noiseFilter = this.audioContext.createBiquadFilter();
+                    const noiseFilter2 = this.audioContext.createBiquadFilter();
                     
+                    noiseSource.buffer = noiseBuffer;
+                    
+                    // Connect drum head
+                    drumOsc.connect(drumFilter);
+                    drumFilter.connect(drumGain);
+                    drumGain.connect(this.audioContext.destination);
+                    
+                    // Connect snare wires
+                    noiseSource.connect(noiseFilter);
+                    noiseFilter.connect(noiseFilter2);
+                    noiseFilter2.connect(noiseGain);
+                    noiseGain.connect(this.audioContext.destination);
+                    
+                    // Drum head frequency (200Hz is typical snare fundamental)
+                    drumOsc.frequency.setValueAtTime(200, time);
+                    drumOsc.frequency.exponentialRampToValueAtTime(150, time + 0.1);
+                    drumOsc.frequency.exponentialRampToValueAtTime(120, time + 0.2);
+                    
+                    // Drum head filter
+                    drumFilter.type = 'bandpass';
+                    drumFilter.frequency.setValueAtTime(400, time);
+                    drumFilter.Q.setValueAtTime(2, time);
+                    
+                    // Snare wire filters
+                    noiseFilter.type = 'highpass';
+                    noiseFilter.frequency.setValueAtTime(1000, time);
+                    noiseFilter.Q.setValueAtTime(1, time);
+                    
+                    noiseFilter2.type = 'peaking';
+                    noiseFilter2.frequency.setValueAtTime(3000, time);
+                    noiseFilter2.Q.setValueAtTime(2, time);
+                    noiseFilter2.gain.setValueAtTime(6, time);
+                    
+                    // Gain envelopes
+                    drumGain.gain.setValueAtTime(this.volume * 0.5, time);
+                    drumGain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+                    
+                    noiseGain.gain.setValueAtTime(this.volume * 0.7, time);
+                    noiseGain.gain.exponentialRampToValueAtTime(this.volume * 0.2, time + 0.05);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+                    
+                    drumOsc.start(time);
+                    noiseSource.start(time);
+                    
+                    drumOsc.stop(time + 0.2);
+                    noiseSource.stop(time + 0.25);
+                };
+            }
+
+            createRealisticTom(frequency, duration) {
+                return () => {
+                    const time = this.audioContext.currentTime;
+                    
+                    // Fundamental frequency
+                    const fundOsc = this.audioContext.createOscillator();
+                    const fundGain = this.audioContext.createGain();
+                    const fundFilter = this.audioContext.createBiquadFilter();
+                    
+                    // Harmonic oscillator
+                    const harmOsc = this.audioContext.createOscillator();
+                    const harmGain = this.audioContext.createGain();
+                    
+                    // Attack transient
+                    const attackOsc = this.audioContext.createOscillator();
+                    const attackGain = this.audioContext.createGain();
+                    const attackFilter = this.audioContext.createBiquadFilter();
+                    
+                    // Connect fundamental
+                    fundOsc.connect(fundFilter);
+                    fundFilter.connect(fundGain);
+                    fundGain.connect(this.audioContext.destination);
+                    
+                    // Connect harmonic
+                    harmOsc.connect(harmGain);
+                    harmGain.connect(this.audioContext.destination);
+                    
+                    // Connect attack
+                    attackOsc.connect(attackFilter);
+                    attackFilter.connect(attackGain);
+                    attackGain.connect(this.audioContext.destination);
+                    
+                    // Frequency sweeps
+                    fundOsc.frequency.setValueAtTime(frequency, time);
+                    fundOsc.frequency.exponentialRampToValueAtTime(frequency * 0.4, time + duration);
+                    
+                    harmOsc.frequency.setValueAtTime(frequency * 1.5, time);
+                    harmOsc.frequency.exponentialRampToValueAtTime(frequency * 0.6, time + duration * 0.7);
+                    
+                    attackOsc.frequency.setValueAtTime(frequency * 3, time);
+                    attackOsc.frequency.exponentialRampToValueAtTime(frequency * 2, time + 0.02);
+                    
+                    // Filters
+                    fundFilter.type = 'lowpass';
+                    fundFilter.frequency.setValueAtTime(frequency * 2, time);
+                    fundFilter.frequency.exponentialRampToValueAtTime(frequency * 0.8, time + duration);
+                    fundFilter.Q.setValueAtTime(1.5, time);
+                    
+                    attackFilter.type = 'bandpass';
+                    attackFilter.frequency.setValueAtTime(frequency * 4, time);
+                    attackFilter.Q.setValueAtTime(3, time);
+                    
+                    // Gain envelopes
+                    fundGain.gain.setValueAtTime(this.volume * 0.8, time);
+                    fundGain.gain.exponentialRampToValueAtTime(this.volume * 0.3, time + 0.1);
+                    fundGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+                    
+                    harmGain.gain.setValueAtTime(this.volume * 0.3, time);
+                    harmGain.gain.exponentialRampToValueAtTime(0.001, time + duration * 0.7);
+                    
+                    attackGain.gain.setValueAtTime(this.volume * 0.4, time);
+                    attackGain.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
+                    
+                    fundOsc.start(time);
+                    harmOsc.start(time);
+                    attackOsc.start(time);
+                    
+                    fundOsc.stop(time + duration);
+                    harmOsc.stop(time + duration * 0.7);
+                    attackOsc.stop(time + 0.02);
+                };
+            }
+
+            createRealisticHiHat() {
+                return () => {
+                    const time = this.audioContext.currentTime;
+                    
+                    // Multiple noise sources for metallic character
+                    const noise1 = this.createNoiseBuffer(0.15, 'white');
+                    const noise2 = this.createNoiseBuffer(0.15, 'white');
+                    
+                    const source1 = this.audioContext.createBufferSource();
+                    const source2 = this.audioContext.createBufferSource();
+                    
+                    const gain1 = this.audioContext.createGain();
+                    const gain2 = this.audioContext.createGain();
+                    
+                    const filter1 = this.audioContext.createBiquadFilter();
+                    const filter2 = this.audioContext.createBiquadFilter();
+                    const filter3 = this.audioContext.createBiquadFilter();
+                    
+                    source1.buffer = noise1;
+                    source2.buffer = noise2;
+                    
+                    source1.connect(filter1);
+                    filter1.connect(filter2);
+                    filter2.connect(gain1);
+                    gain1.connect(this.audioContext.destination);
+                    
+                    source2.connect(filter3);
+                    filter3.connect(gain2);
+                    gain2.connect(this.audioContext.destination);
+                    
+                    // High-frequency emphasis for metallic character
+                    filter1.type = 'highpass';
+                    filter1.frequency.setValueAtTime(8000, time);
+                    filter1.Q.setValueAtTime(0.7, time);
+                    
+                    filter2.type = 'peaking';
+                    filter2.frequency.setValueAtTime(12000, time);
+                    filter2.Q.setValueAtTime(2, time);
+                    filter2.gain.setValueAtTime(8, time);
+                    
+                    filter3.type = 'bandpass';
+                    filter3.frequency.setValueAtTime(10000, time);
+                    filter3.Q.setValueAtTime(3, time);
+                    
+                    // Sharp attack and quick decay
+                    gain1.gain.setValueAtTime(this.volume * 0.6, time);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+                    
+                    gain2.gain.setValueAtTime(this.volume * 0.4, time);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+                    
+                    source1.start(time);
+                    source2.start(time);
+                    
+                    source1.stop(time + 0.1);
+                    source2.stop(time + 0.08);
+                };
+            }
+
+            createRealisticCrash() {
+                return () => {
+                    const time = this.audioContext.currentTime;
+                    const duration = 2.5;
+                    
+                    // Multiple frequency bands for complex cymbal sound
+                    const noise = this.createNoiseBuffer(duration, 'pink');
+                    const source = this.audioContext.createBufferSource();
+                    
+                    const gainMain = this.audioContext.createGain();
+                    const filterLow = this.audioContext.createBiquadFilter();
+                    const filterMid = this.audioContext.createBiquadFilter();
+                    const filterHigh = this.audioContext.createBiquadFilter();
+                    
+                    source.buffer = noise;
+                    
+                    source.connect(filterLow);
+                    filterLow.connect(filterMid);
+                    filterMid.connect(filterHigh);
+                    filterHigh.connect(gainMain);
+                    gainMain.connect(this.audioContext.destination);
+                    
+                    // Complex filtering for realistic cymbal
+                    filterLow.type = 'highpass';
+                    filterLow.frequency.setValueAtTime(400, time);
+                    filterLow.Q.setValueAtTime(0.5, time);
+                    
+                    filterMid.type = 'peaking';
+                    filterMid.frequency.setValueAtTime(2500, time);
+                    filterMid.frequency.exponentialRampToValueAtTime(1800, time + duration);
+                    filterMid.Q.setValueAtTime(1.5, time);
+                    filterMid.gain.setValueAtTime(6, time);
+                    
+                    filterHigh.type = 'peaking';
+                    filterHigh.frequency.setValueAtTime(8000, time);
+                    filterHigh.Q.setValueAtTime(2, time);
+                    filterHigh.gain.setValueAtTime(4, time);
+                    
+                    // Long decay with shimmer
+                    gainMain.gain.setValueAtTime(this.volume * 0.8, time);
+                    gainMain.gain.exponentialRampToValueAtTime(this.volume * 0.4, time + 0.2);
+                    gainMain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+                    
+                    source.start(time);
+                    source.stop(time + duration);
+                };
+            }
+
+            createRealisticRide() {
+                return () => {
+                    const time = this.audioContext.currentTime;
+                    const duration = 1.8;
+                    
+                    // Bell-like oscillator for ping
+                    const bellOsc = this.audioContext.createOscillator();
+                    const bellGain = this.audioContext.createGain();
+                    const bellFilter = this.audioContext.createBiquadFilter();
+                    
+                    // Noise for wash
+                    const noise = this.createNoiseBuffer(duration, 'pink');
                     const noiseSource = this.audioContext.createBufferSource();
                     const noiseGain = this.audioContext.createGain();
                     const noiseFilter = this.audioContext.createBiquadFilter();
                     
-                    noiseSource.buffer = buffer;
+                    noiseSource.buffer = noise;
+                    
+                    // Connect bell
+                    bellOsc.connect(bellFilter);
+                    bellFilter.connect(bellGain);
+                    bellGain.connect(this.audioContext.destination);
+                    
+                    // Connect wash
                     noiseSource.connect(noiseFilter);
                     noiseFilter.connect(noiseGain);
                     noiseGain.connect(this.audioContext.destination);
                     
-                    oscillator.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
+                    // Bell frequency (ride ping)
+                    bellOsc.frequency.setValueAtTime(1800, time);
+                    bellOsc.frequency.exponentialRampToValueAtTime(1600, time + 0.5);
                     
-                    // Snare drum characteristics
-                    oscillator.frequency.setValueAtTime(250, this.audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(150, this.audioContext.currentTime + 0.2);
+                    bellFilter.type = 'bandpass';
+                    bellFilter.frequency.setValueAtTime(2000, time);
+                    bellFilter.Q.setValueAtTime(3, time);
                     
-                    filter.type = 'bandpass';
-                    filter.frequency.setValueAtTime(800, this.audioContext.currentTime);
-                    filter.Q.setValueAtTime(2, this.audioContext.currentTime);
+                    // Wash filter
+                    noiseFilter.type = 'bandpass';
+                    noiseFilter.frequency.setValueAtTime(1200, time);
+                    noiseFilter.frequency.exponentialRampToValueAtTime(800, time + duration);
+                    noiseFilter.Q.setValueAtTime(1.2, time);
                     
-                    noiseFilter.type = 'highpass';
-                    noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
-                    noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
+                    // Envelopes
+                    bellGain.gain.setValueAtTime(this.volume * 0.4, time);
+                    bellGain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
                     
-                    gainNode.gain.setValueAtTime(this.volume * 0.8, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+                    noiseGain.gain.setValueAtTime(this.volume * 0.6, time);
+                    noiseGain.gain.exponentialRampToValueAtTime(this.volume * 0.3, time + 0.3);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
                     
-                    noiseGain.gain.setValueAtTime(this.volume * 0.9, this.audioContext.currentTime);
-                    noiseGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+                    bellOsc.start(time);
+                    noiseSource.start(time);
                     
-                    oscillator.start(this.audioContext.currentTime);
-                    noiseSource.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.2);
-                    noiseSource.stop(this.audioContext.currentTime + 0.2);
+                    bellOsc.stop(time + 0.5);
+                    noiseSource.stop(time + duration);
                 };
             }
 
-            createHiHatSound() {
-                return () => {
-                    const bufferSize = this.audioContext.sampleRate * 0.1;
-                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
-                    const output = buffer.getChannelData(0);
-                    
+            createNoiseBuffer(duration, type = 'white') {
+                const bufferSize = this.audioContext.sampleRate * duration;
+                const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                const output = buffer.getChannelData(0);
+                
+                if (type === 'white') {
                     for (let i = 0; i < bufferSize; i++) {
-                        output[i] = (Math.random() * 2 - 1);
+                        output[i] = Math.random() * 2 - 1;
                     }
-                    
-                    const noiseSource = this.audioContext.createBufferSource();
-                    const gainNode = this.audioContext.createGain();
-                    const filter = this.audioContext.createBiquadFilter();
-                    
-                    noiseSource.buffer = buffer;
-                    noiseSource.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
-                    
-                    filter.type = 'highpass';
-                    filter.frequency.setValueAtTime(8000, this.audioContext.currentTime);
-                    filter.Q.setValueAtTime(1.5, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.6, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
-                    
-                    noiseSource.start(this.audioContext.currentTime);
-                    noiseSource.stop(this.audioContext.currentTime + 0.1);
-                };
-            }
-
-            createCrashSound() {
-                return () => {
-                    const bufferSize = this.audioContext.sampleRate * 1.5;
-                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
-                    const output = buffer.getChannelData(0);
-                    
+                } else if (type === 'pink') {
+                    // Pink noise generation (simplified)
+                    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
                     for (let i = 0; i < bufferSize; i++) {
-                        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                        const white = Math.random() * 2 - 1;
+                        b0 = 0.99886 * b0 + white * 0.0555179;
+                        b1 = 0.99332 * b1 + white * 0.0750759;
+                        b2 = 0.96900 * b2 + white * 0.1538520;
+                        b3 = 0.86650 * b3 + white * 0.3104856;
+                        b4 = 0.55000 * b4 + white * 0.5329522;
+                        b5 = -0.7616 * b5 - white * 0.0168980;
+                        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+                        b6 = white * 0.115926;
                     }
-                    
-                    const noiseSource = this.audioContext.createBufferSource();
-                    const gainNode = this.audioContext.createGain();
-                    const filter = this.audioContext.createBiquadFilter();
-                    
-                    noiseSource.buffer = buffer;
-                    noiseSource.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
-                    
-                    filter.type = 'bandpass';
-                    filter.frequency.setValueAtTime(3000, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(1000, this.audioContext.currentTime + 1.5);
-                    filter.Q.setValueAtTime(0.8, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 1.5);
-                    
-                    noiseSource.start(this.audioContext.currentTime);
-                    noiseSource.stop(this.audioContext.currentTime + 1.5);
-                };
-            }
-
-            createTomSound(frequency) {
-                return () => {
-                    const oscillator = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
-                    const filter = this.audioContext.createBiquadFilter();
-                    
-                    oscillator.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
-                    
-                    // Tom characteristics with better audibility
-                    oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.3, this.audioContext.currentTime + 0.4);
-                    
-                    filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(frequency * 3, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(frequency * 0.5, this.audioContext.currentTime + 0.4);
-                    filter.Q.setValueAtTime(1.2, this.audioContext.currentTime);
-                    
-                    // Increased volume and better envelope
-                    gainNode.gain.setValueAtTime(this.volume * 1.2, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(this.volume * 0.3, this.audioContext.currentTime + 0.1);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.4);
-                    
-                    oscillator.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.4);
-                };
-            }
-
-            createRideSound() {
-                return () => {
-                    const bufferSize = this.audioContext.sampleRate * 1.0;
-                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
-                    const output = buffer.getChannelData(0);
-                    
-                    for (let i = 0; i < bufferSize; i++) {
-                        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
-                    }
-                    
-                    const noiseSource = this.audioContext.createBufferSource();
-                    const gainNode = this.audioContext.createGain();
-                    const filter = this.audioContext.createBiquadFilter();
-                    
-                    noiseSource.buffer = buffer;
-                    noiseSource.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
-                    
-                    filter.type = 'bandpass';
-                    filter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 1.0);
-                    filter.Q.setValueAtTime(1.2, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(this.volume * 0.8, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 1.0);
-                    
-                    noiseSource.start(this.audioContext.currentTime);
-                    noiseSource.stop(this.audioContext.currentTime + 1.0);
-                };
+                }
+                
+                return buffer;
             }
 
             playSound(soundName) {
                 if (!this.isInitialized || !this.sounds[soundName]) return;
                 
-                // Resume audio context if suspended
                 if (this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
                 }
@@ -505,7 +711,6 @@
             }
 
             setupEventListeners() {
-                // Click events for drums
                 document.querySelectorAll('.drum').forEach(drum => {
                     drum.addEventListener('click', (e) => {
                         const soundName = e.target.dataset.sound;
@@ -547,9 +752,8 @@
                     });
                 });
 
-                // Stop all button (simplified implementation)
+                // Stop all button
                 document.getElementById('stopAll').addEventListener('click', () => {
-                    // Close and recreate audio context to stop all sounds
                     if (this.audioContext) {
                         this.audioContext.close();
                         this.init();
